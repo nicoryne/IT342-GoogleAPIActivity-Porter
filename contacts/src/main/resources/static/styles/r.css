@@ -1,0 +1,43 @@
+@font-face {
+  font-family: 'TiltNeon';
+  src: url('../fonts/TiltNeon-Regular.ttf') format('truetype');
+}
+
+:root {
+  --primary: #83c5be;
+  --primary-light: #a8dadc;
+  --secondary: #006d77;
+  --secondary-dark: #004c54;
+  --accent: #e29578;
+  --accent-light: #ffddd2;
+  --foreground: #ffffff;
+  --text-dark: #666666;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 16px;
+  font-family: 'TiltNeon', sans-serif;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+.root {
+  min-width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.center {
+  place-items: center;
+  justify-content: center;
+}

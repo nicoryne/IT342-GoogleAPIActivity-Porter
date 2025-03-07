@@ -28,6 +28,11 @@ public class GoogleController {
         return "index";
     }
 
+    @GetMapping("/error")
+    public String error() {
+        return "index";
+    }
+
     @GetMapping("/account")
     public String account(Model model, @AuthenticationPrincipal OAuth2User user, OAuth2AuthenticationToken auth) {
         if (user == null) {
@@ -50,8 +55,6 @@ public class GoogleController {
             List<Person> contacts = response.getConnections();
             model.addAttribute("contacts", contacts != null ? contacts : Collections.emptyList());
             model.addAttribute("accessToken", accessToken);
-
-            System.out.println(contacts);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching Google profile", e);
         }

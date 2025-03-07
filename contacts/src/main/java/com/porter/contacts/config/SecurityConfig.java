@@ -15,10 +15,12 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable()) 
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/contacts/add", "/contacts/delete", "/contacts/update").authenticated() // Protect contact management
-                    .anyRequest().permitAll())
-                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/account", true))
+                    .requestMatchers("/", "/styles/*", "/scripts/*", "/img/*").permitAll()
+                    .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                    .defaultSuccessUrl("/account", true))
                 .logout(logout -> logout.logoutSuccessUrl("/"))
                 .build();
     }
+
 }

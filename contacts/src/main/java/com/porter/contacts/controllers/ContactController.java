@@ -2,7 +2,9 @@ package com.porter.contacts.controllers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,16 +32,32 @@ public class ContactController {
     private GoogleService googleContactService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addContact(@RequestParam String name, @RequestParam String email,
-                                             @RequestParam String phone, OAuth2AuthenticationToken auth, @RequestParam(required = false) MultipartFile profilePicture) {
+    public ResponseEntity<String> addContact(@RequestParam String name, @RequestParam String[] emails,
+                                             @RequestParam String[] phones, OAuth2AuthenticationToken auth, @RequestParam(required = false) MultipartFile profilePicture) {
         try {
             String accessToken = googleContactService.getAccessToken(auth);
             PeopleService peopleService = googleContactService.getPeopleService(accessToken);
 
             Person newContact = new Person()
-                .setNames(Collections.singletonList(new Name().setGivenName(name)))
-                .setEmailAddresses(Collections.singletonList(new EmailAddress().setValue(email)))
-                .setPhoneNumbers(Collections.singletonList(new PhoneNumber().setValue(phone)));
+                .setNames(Collections.singletonList(new Name().setGivenName(name)));
+            
+            if (emails != null && emails.length > 0) {
+                List<EmailAddress> emailAddresses = new ArrayList<>();
+                for (String email : emails) {
+                    emailAddresses.add(new EmailAddress().setValue(email));
+                }
+                newContact.setEmailAddresses(emailAddresses);
+            }
+
+            // Add phone numbers
+            if (phones != null && phones.length > 0) {
+                List<PhoneNumber> phoneNumbers = new ArrayList<>();
+                for (String phone : phones) {
+                    phoneNumbers.add(new PhoneNumber().setValue(phone));
+                }
+                newContact.setPhoneNumbers(phoneNumbers);
+            }
+                
 
             Person createdContact = peopleService.people().createContact(newContact)
                 .setPersonFields("names,emailAddresses,phoneNumbers")
@@ -71,7 +89,7 @@ public class ContactController {
 
     @PostMapping("/update")
     public ResponseEntity<String> updateContact(@RequestParam String contactId, @RequestParam String name,
-                                                @RequestParam String email, @RequestParam String phone, @RequestParam(required = false) MultipartFile profilePicture, OAuth2AuthenticationToken auth) {
+                                                @RequestParam String[] emails, @RequestParam String[] phones, @RequestParam(required = false) MultipartFile profilePicture, OAuth2AuthenticationToken auth) {
         try {
             String accessToken = googleContactService.getAccessToken(auth);
             PeopleService peopleService = googleContactService.getPeopleService(accessToken);
@@ -82,9 +100,24 @@ public class ContactController {
       
             Person updatedContact = new Person()
                 .setNames(Collections.singletonList(new Name().setGivenName(name)))
-                .setEmailAddresses(Collections.singletonList(new EmailAddress().setValue(email)))
-                .setPhoneNumbers(Collections.singletonList(new PhoneNumber().setValue(phone)))
-                .setEtag(existingContact.getEtag()); 
+                .setEtag(existingContact.getEtag());
+
+            if (emails != null && emails.length > 0) {
+                List<EmailAddress> emailAddresses = new ArrayList<>();
+                for (String email : emails) {
+                    emailAddresses.add(new EmailAddress().setValue(email));
+                }
+                updatedContact.setEmailAddresses(emailAddresses);
+            }
+
+          
+            if (phones != null && phones.length > 0) {
+                List<PhoneNumber> phoneNumbers = new ArrayList<>();
+                for (String phone : phones) {
+                    phoneNumbers.add(new PhoneNumber().setValue(phone));
+                }
+                updatedContact.setPhoneNumbers(phoneNumbers);
+            }
    
             peopleService.people().updateContact(contactId, updatedContact)
                 .setUpdatePersonFields("names,emailAddresses,phoneNumbers")

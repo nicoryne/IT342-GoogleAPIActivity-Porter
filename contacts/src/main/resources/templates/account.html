@@ -2,207 +2,283 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>Contacts Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacts Management | Porter</title>
+    <link rel="stylesheet" th:href="@{/styles/account.css}" href="/styles/account.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
-  <body class="container mt-4">
-    <h1 class="mb-4">My Contacts</h1>
+  <body class="root body-bg">
+    <div class="container">
+      <header class="header">
+        <div class="logo">
+          <i class="fa-solid fa-address-book"></i>
+          <h1>Porter</h1>
+        </div>
+        <div class="user-info">
+          <img th:src="${userPicture}" alt="User Profile" class="user-avatar" loading="lazy" />
+          <div class="user-details">
+            <p class="user-name" th:text="${userName}">User Name</p>
+            <p class="user-email" th:text="${userEmail}">user@example.com</p>
+          </div>
+          <a href="/logout" class="logout-btn">
+            <i class="fa-solid fa-sign-out-alt"></i>
+            Logout
+          </a>
+        </div>
+      </header>
 
-    <!-- User Information -->
-    <div class="card p-3 mb-4 d-flex flex-row gap-4">
-      <div class="justify-items-center">
-        <img th:src="${userPicture}" class="rounded-circle" width="128" />
-      </div>
-      <div>
-        <h2>User Information</h2>
-        <p><strong>Name:</strong> <span th:text="${userName}"></span></p>
-        <p><strong>Email:</strong> <span th:text="${userEmail}"></span></p>
-      </div>
-    </div>
-    <!-- Contacts Table -->
-    <div class="card p-3">
-      <h2>Contacts</h2>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Profile</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="contact : ${contacts}">
-              <td>
-                <img
-                  th:if="${contact.photos != null and contact.photos.size() > 0}"
-                  th:src="${contact.photos[0].url}"
-                  alt="Profile Picture"
-                  class="rounded-circle"
-                  style="width: 40px; height: 40px"
-                />
-                <span th:unless="${contact.photos != null and contact.photos.size() > 0}">No Picture</span>
-              </td>
-              <td
-                th:text="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : 'No Name'}"
-              ></td>
-              <td
-                th:text="${contact.emailAddresses != null and contact.emailAddresses.size() > 0 ? contact.emailAddresses[0].value : 'No Email'}"
-              ></td>
-              <td
-                th:text="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0 ? contact.phoneNumbers[0].value : 'No Phone'}"
-              ></td>
-              <td>
-                <button
-                  class="btn btn-primary btn-sm edit-btn"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editModal"
-                  th:data-id="${contact.resourceName}"
-                  th:data-name="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : ''}"
-                  th:data-email="${contact.emailAddresses != null and contact.emailAddresses.size() > 0 ? contact.emailAddresses[0].value : ''}"
-                  th:data-phone="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0 ? contact.phoneNumbers[0].value : ''}"
-                  th:data-picture="${contact.photos != null and contact.photos.size() > 0 ? contact.photos[0].url : ''}"
-                >
-                  Edit
-                </button>
-                <form method="post" action="/api/contacts/delete" class="d-inline">
-                  <input type="hidden" name="contactId" th:value="${contact.resourceName}" />
-                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this contact?')">
-                    Delete
-                  </button>
-                </form>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <main class="main-content">
+        <div class="section-header">
+          <h2>My Contacts</h2>
+          <button id="addContactBtn" class="btn btn-add"><i class="fa-solid fa-plus"></i> Add Contact</button>
+        </div>
 
-    <!-- Add Contact Form -->
-    <div class="card p-3 mt-4">
-      <h2>Add Contact</h2>
-      <form method="post" action="/api/contacts/add" enctype="multipart/form-data">
-        <div class="d-flex justify-content-center">
-          <img id="editProfilePreviewAdd" class="rounded-circle mt-2" width="100" />
+        <!-- Contacts Table -->
+        <div class="card contacts-card">
+          <div class="table-container">
+            <table class="contacts-table">
+              <thead>
+                <tr>
+                  <th>Profile</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="contact : ${contacts}">
+                  <td class="profile-cell">
+                    <img
+                      th:if="${contact.photos != null and contact.photos.size() > 0}"
+                      th:src="${contact.photos[0].url}"
+                      alt="Profile Picture"
+                      class="contact-avatar"
+                      loading="lazy"
+                      onerror="this.onerror=null; this.src='/img/placeholder.svg';"
+                    />
+                    <div th:unless="${contact.photos != null and contact.photos.size() > 0}" class="avatar-placeholder">
+                      <i class="fa-solid fa-user"></i>
+                    </div>
+                  </td>
+                  <td
+                    th:text="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : 'No Name'}"
+                  ></td>
+                  <td class="email-cell">
+                    <div class="tags-container">
+                      <div
+                        th:if="${contact.emailAddresses != null and contact.emailAddresses.size() > 0}"
+                        class="tags-list"
+                      >
+                        <span th:each="email : ${contact.emailAddresses}" class="tag email-tag">
+                          <span th:text="${email.value}"></span>
+                        </span>
+                      </div>
+                      <span
+                        th:unless="${contact.emailAddresses != null and contact.emailAddresses.size() > 0}"
+                        class="no-data"
+                        >No Email</span
+                      >
+                    </div>
+                  </td>
+                  <td class="phone-cell">
+                    <div class="tags-container">
+                      <div
+                        th:if="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0}"
+                        class="tags-list"
+                      >
+                        <span th:each="phone : ${contact.phoneNumbers}" class="tag phone-tag">
+                          <span th:text="${phone.value}"></span>
+                        </span>
+                      </div>
+                      <span
+                        th:unless="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0}"
+                        class="no-data"
+                        >No Phone</span
+                      >
+                    </div>
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      class="btn btn-edit edit-btn"
+                      th:data-id="${contact.resourceName}"
+                      th:data-name="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : ''}"
+                      th:data-picture="${contact.photos != null and contact.photos.size() > 0 ? contact.photos[0].url : ''}"
+                      th:data-emails="${contact.emailAddresses}"
+                      th:data-phones="${contact.phoneNumbers}"
+                    >
+                      <i class="fa-solid fa-edit"></i>
+                    </button>
+                    <button class="btn btn-delete delete-btn" th:data-id="${contact.resourceName}">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="mb-2">
-          <label class="form-label">Name</label>
-          <input type="text" name="name" class="form-control" required />
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-control" required />
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Phone</label>
-          <input
-            type="tel"
-            name="phone"
-            class="form-control"
-            required
-            pattern="[0-9]{10,15}"
-            title="Enter a valid phone number (10-15 digits)"
-          />
-        </div>
-        <div class="mb-2 items-center">
-          <label class="form-label">Profile Picture</label>
-          <input type="file" name="profilePicture" id="editProfilePictureAdd" class="form-control" />
-        </div>
-        <button type="submit" class="btn btn-success mt-4">Add Contact</button>
-      </form>
-    </div>
+      </main>
 
-    <!-- Edit Contact Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
+      <!-- Add Contact Modal -->
+      <div id="addContactModal" class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Edit Contact</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <h3>Add New Contact</h3>
+            <button class="close-btn" id="closeAddModal">
+              <i class="fa-solid fa-times"></i>
+            </button>
           </div>
           <div class="modal-body">
-            <form method="post" action="/api/contacts/update" enctype="multipart/form-data">
-              <input type="hidden" name="contactId" id="editContactId" />
-              <div class="d-flex justify-content-center">
-                <img id="editProfilePreviewUpdate" class="rounded-circle mt-2" width="100" />
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Name</label>
-                <input type="text" name="name" id="editName" class="form-control" required />
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" id="editEmail" class="form-control" required />
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Phone</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  id="editPhone"
-                  class="form-control"
-                  required
-                  pattern="[0-9]{10,15}"
-                  title="Enter a valid phone number (10-15 digits)"
-                />
-              </div>
-              <div class="mb-2 items-center">
-                <label class="form-label">Profile Picture</label>
-                <input type="file" name="profilePicture" id="editProfilePictureUpdate" class="form-control" />
+            <form id="addContactForm" method="post" action="/api/contacts/add" enctype="multipart/form-data">
+              <div class="profile-upload">
+                <div class="profile-preview">
+                  <img
+                    id="addProfilePreview"
+                    class="preview-img"
+                    src="/img/placeholder.svg"
+                    width="100px"
+                    height="100px"
+                    alt="Profile Preview"
+                    loading="lazy"
+                  />
+                </div>
+                <label for="addProfilePicture" class="upload-label">
+                  <i class="fa-solid fa-camera"></i>
+                  Upload Photo
+                </label>
+                <input type="file" id="addProfilePicture" name="profilePicture" class="file-input" accept="image/*" />
               </div>
 
-              <button type="submit" class="btn btn-primary mt-4">Save Changes</button>
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" class="form-input" required />
+              </div>
+
+              <div id="emailFieldsAdd" class="multi-fields">
+                <div class="form-group">
+                  <label>Email</label>
+                  <div class="input-with-button">
+                    <input
+                      type="email"
+                      name="emails[]"
+                      class="form-input"
+                      pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                      title="Enter a valid email address"
+                      required
+                    />
+                    <button type="button" class="add-field-btn" data-field="email">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="phoneFieldsAdd" class="multi-fields">
+                <div class="form-group">
+                  <label>Phone</label>
+                  <div class="input-with-button">
+                    <input
+                      type="tel"
+                      name="phones[]"
+                      class="form-input"
+                      required
+                      pattern="[0-9]{10,15}"
+                      title="Enter a valid phone number (10-15 digits)"
+                    />
+                    <button type="button" class="add-field-btn" data-field="phone">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Contact</button>
+              </div>
             </form>
           </div>
         </div>
       </div>
+
+      <!-- Edit Contact Modal -->
+      <div id="editContactModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Edit Contact</h3>
+            <button class="close-btn" id="closeEditModal">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="editContactForm" method="post" action="/api/contacts/update" enctype="multipart/form-data">
+              <input type="hidden" name="contactId" id="editContactId" />
+
+              <div class="profile-upload">
+                <div class="profile-preview">
+                  <img
+                    id="editProfilePreview"
+                    class="preview-img"
+                    alt="Profile Preview"
+                    src="/img/placeholder.svg"
+                    width="100px"
+                    height="100px"
+                    loading="lazy"
+                  />
+                </div>
+                <label for="editProfilePicture" class="upload-label">
+                  <i class="fa-solid fa-camera"></i>
+                  Change Photo
+                </label>
+                <input type="file" id="editProfilePicture" name="profilePicture" class="file-input" accept="image/*" />
+              </div>
+
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" id="editName" class="form-input" required />
+              </div>
+
+              <div id="emailFieldsEdit" class="multi-fields">
+                <!-- Email fields will be added dynamically -->
+              </div>
+
+              <div id="phoneFieldsEdit" class="multi-fields">
+                <!-- Phone fields will be added dynamically -->
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content modal-sm">
+          <div class="modal-header">
+            <h3>Confirm Deletion</h3>
+            <button class="close-btn" id="closeDeleteModal">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this contact?</p>
+            <form id="deleteContactForm" method="post" action="/api/contacts/delete">
+              <input type="hidden" name="contactId" id="deleteContactId" />
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancelDelete">Cancel</button>
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay" id="modalOverlay"></div>
     </div>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const editButtons = document.querySelectorAll('.edit-btn')
-
-        editButtons.forEach((button) => {
-          button.addEventListener('click', function () {
-            document.getElementById('editContactId').value = this.dataset.id
-            document.getElementById('editName').value = this.dataset.name
-            document.getElementById('editEmail').value = this.dataset.email
-            document.getElementById('editPhone').value = this.dataset.phone
-
-            let profilePicture = this.dataset.picture
-            if (profilePicture && profilePicture !== 'null') {
-              document.getElementById('editProfilePreviewUpdate').src = profilePicture
-            } else {
-              document.getElementById('editProfilePreviewUpdate').src = 'default-profile.png'
-            }
-          })
-        })
-
-        document.getElementById('editProfilePictureUpdate').addEventListener('change', function (event) {
-          const file = event.target.files[0]
-          if (file) {
-            const reader = new FileReader()
-            reader.onload = function (e) {
-              document.getElementById('editProfilePreviewUpdate').src = e.target.result
-            }
-            reader.readAsDataURL(file)
-          }
-        })
-
-        document.getElementById('editProfilePictureAdd').addEventListener('change', function (event) {
-          const file = event.target.files[0]
-          if (file) {
-            const reader = new FileReader()
-            reader.onload = function (e) {
-              document.getElementById('editProfilePreviewAdd').src = e.target.result
-            }
-            reader.readAsDataURL(file)
-          }
-        })
-      })
-    </script>
+    <script th:src="@{/scripts/contacts.js}" src="/scripts/contacts.js"></script>
   </body>
 </html>
