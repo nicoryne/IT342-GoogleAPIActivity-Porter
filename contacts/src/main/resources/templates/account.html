@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Contacts Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" defer></script>
+  </head>
+  <body class="container mt-4">
+    <h1 class="mb-4">My Contacts</h1>
+
+    <!-- User Information -->
+    <div class="card p-3 mb-4 d-flex flex-row gap-4">
+      <div class="justify-items-center">
+        <img th:src="${userPicture}" class="rounded-circle" width="128" />
+      </div>
+      <div>
+        <h2>User Information</h2>
+        <p><strong>Name:</strong> <span th:text="${userName}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${userEmail}"></span></p>
+      </div>
+    </div>
+    <!-- Contacts Table -->
+    <div class="card p-3">
+      <h2>Contacts</h2>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="contact : ${contacts}">
+              <td>
+                <img
+                  th:if="${contact.photos != null and contact.photos.size() > 0}"
+                  th:src="${contact.photos[0].url}"
+                  alt="Profile Picture"
+                  class="rounded-circle"
+                  style="width: 40px; height: 40px"
+                />
+                <span th:unless="${contact.photos != null and contact.photos.size() > 0}">No Picture</span>
+              </td>
+              <td
+                th:text="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : 'No Name'}"
+              ></td>
+              <td
+                th:text="${contact.emailAddresses != null and contact.emailAddresses.size() > 0 ? contact.emailAddresses[0].value : 'No Email'}"
+              ></td>
+              <td
+                th:text="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0 ? contact.phoneNumbers[0].value : 'No Phone'}"
+              ></td>
+              <td>
+                <button
+                  class="btn btn-primary btn-sm edit-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editModal"
+                  th:data-id="${contact.resourceName}"
+                  th:data-name="${contact.names != null and contact.names.size() > 0 ? contact.names[0].displayName : ''}"
+                  th:data-email="${contact.emailAddresses != null and contact.emailAddresses.size() > 0 ? contact.emailAddresses[0].value : ''}"
+                  th:data-phone="${contact.phoneNumbers != null and contact.phoneNumbers.size() > 0 ? contact.phoneNumbers[0].value : ''}"
+                  th:data-picture="${contact.photos != null and contact.photos.size() > 0 ? contact.photos[0].url : ''}"
+                >
+                  Edit
+                </button>
+                <form method="post" action="/api/contacts/delete" class="d-inline">
+                  <input type="hidden" name="contactId" th:value="${contact.resourceName}" />
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this contact?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add Contact Form -->
+    <div class="card p-3 mt-4">
+      <h2>Add Contact</h2>
+      <form method="post" action="/api/contacts/add" enctype="multipart/form-data">
+        <div class="d-flex justify-content-center">
+          <img id="editProfilePreviewAdd" class="rounded-circle mt-2" width="100" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" class="form-control" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Phone</label>
+          <input
+            type="tel"
+            name="phone"
+            class="form-control"
+            required
+            pattern="[0-9]{10,15}"
+            title="Enter a valid phone number (10-15 digits)"
+          />
+        </div>
+        <div class="mb-2 items-center">
+          <label class="form-label">Profile Picture</label>
+          <input type="file" name="profilePicture" id="editProfilePictureAdd" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-success mt-4">Add Contact</button>
+      </form>
+    </div>
+
+    <!-- Edit Contact Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Contact</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" action="/api/contacts/update" enctype="multipart/form-data">
+              <input type="hidden" name="contactId" id="editContactId" />
+              <div class="d-flex justify-content-center">
+                <img id="editProfilePreviewUpdate" class="rounded-circle mt-2" width="100" />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" id="editName" class="form-control" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="editEmail" class="form-control" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  id="editPhone"
+                  class="form-control"
+                  required
+                  pattern="[0-9]{10,15}"
+                  title="Enter a valid phone number (10-15 digits)"
+                />
+              </div>
+              <div class="mb-2 items-center">
+                <label class="form-label">Profile Picture</label>
+                <input type="file" name="profilePicture" id="editProfilePictureUpdate" class="form-control" />
+              </div>
+
+              <button type="submit" class="btn btn-primary mt-4">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const editButtons = document.querySelectorAll('.edit-btn')
+
+        editButtons.forEach((button) => {
+          button.addEventListener('click', function () {
+            document.getElementById('editContactId').value = this.dataset.id
+            document.getElementById('editName').value = this.dataset.name
+            document.getElementById('editEmail').value = this.dataset.email
+            document.getElementById('editPhone').value = this.dataset.phone
+
+            let profilePicture = this.dataset.picture
+            if (profilePicture && profilePicture !== 'null') {
+              document.getElementById('editProfilePreviewUpdate').src = profilePicture
+            } else {
+              document.getElementById('editProfilePreviewUpdate').src = 'default-profile.png'
+            }
+          })
+        })
+
+        document.getElementById('editProfilePictureUpdate').addEventListener('change', function (event) {
+          const file = event.target.files[0]
+          if (file) {
+            const reader = new FileReader()
+            reader.onload = function (e) {
+              document.getElementById('editProfilePreviewUpdate').src = e.target.result
+            }
+            reader.readAsDataURL(file)
+          }
+        })
+
+        document.getElementById('editProfilePictureAdd').addEventListener('change', function (event) {
+          const file = event.target.files[0]
+          if (file) {
+            const reader = new FileReader()
+            reader.onload = function (e) {
+              document.getElementById('editProfilePreviewAdd').src = e.target.result
+            }
+            reader.readAsDataURL(file)
+          }
+        })
+      })
+    </script>
+  </body>
+</html>
